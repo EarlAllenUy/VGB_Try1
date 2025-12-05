@@ -19,6 +19,7 @@ const AdminGames: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [importResults, setImportResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
+  const [bulkImporting, setBulkImporting] = useState(false);
   
   // Staging State (Game being edited before add)
   const [stagedGame, setStagedGame] = useState<Game | null>(null);
@@ -70,13 +71,13 @@ const AdminGames: React.FC = () => {
           }
       } catch (error) {
           console.error("IGDB Proxy Error", error);
-          alert("Failed to connect to server.");
+          alert("Failed to connect to server. Is 'npm run dev' running?");
       } finally {
           setSearching(false);
       }
   };
 
-  const stageForImport = (igdbGame: any) => {
+  const mapIgdbToGame = (igdbGame: any): Game => {
       // Logic to parse unix timestamp
       let dateStr = 'TBA';
       if (igdbGame.first_release_date) {
@@ -85,29 +86,76 @@ const AdminGames: React.FC = () => {
       }
 
       // Logic to build Image URL
-      // IGDB format: https://images.igdb.com/igdb/image/upload/t_{size}/{hash}.jpg
       let imgUrl = '';
       if (igdbGame.cover && igdbGame.cover.image_id) {
-          imgUrl = `https://images.igdb.com/igdb/image/upload/t_cover_big/${igdbGame.cover.image_id}.jpg`;
+          // Use 720p image size for better quality
+          imgUrl = `https://images.igdb.com/igdb/image/upload/t_720p/${igdbGame.cover.image_id}.jpg`;
       }
 
-      // Safe access for nested arrays
       const developer = igdbGame.involved_companies?.[0]?.company?.name || 'Unknown';
       const platforms = igdbGame.platforms?.map((p: any) => p.name) || [];
       const genre = igdbGame.genres?.[0]?.name || 'Action';
 
-      const newGame: Game = {
+      return {
           title: igdbGame.name,
           releaseDate: dateStr,
           developer: developer,
-          publisher: 'Unknown', // IGDB structure for publisher is complex, simpler to edit manually
+          publisher: 'Unknown',
           status: dateStr === 'TBA' ? 'TBA' : (new Date(dateStr) > new Date() ? 'Upcoming' : 'Released'),
           platforms: platforms,
           genre: genre,
           description: igdbGame.summary || "Imported from IGDB.",
           imageUrl: imgUrl
       };
-      setStagedGame(newGame);
+  };
+
+  const handleBulkPopulate = async () => {
+      if (!clientId || !clientSecret) {
+          alert("Please enter both Client ID and Client Secret first.");
+          return;
+      }
+      
+      if (!confirm("This will automatically fetch and add the top 20 trending games from IGDB to your database. Continue?")) return;
+
+      setBulkImporting(true);
+      try {
+          const res = await fetch(`http://localhost:3001/igdb/discover`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ clientId, clientSecret })
+          });
+          
+          const igdbGames = await res.json();
+          
+          if (!res.ok) throw new Error(igdbGames.error || "Failed to fetch popular games");
+          
+          let addedCount = 0;
+          
+          // Process sequentially to avoid race conditions in DB
+          for (const rawGame of igdbGames) {
+             const gameObj = mapIgdbToGame(rawGame);
+             // Simple check to avoid duplicates by title (optional, frontend side)
+             const exists = dbGames.some(g => g.title === gameObj.title);
+             if (!exists) {
+                 await addGame(gameObj);
+                 addedCount++;
+             }
+          }
+
+          alert(`Successfully imported ${addedCount} new games!`);
+          loadDbGames();
+          setActiveTab('manage');
+
+      } catch (error) {
+          console.error("Bulk Import Error", error);
+          alert("Failed to auto-populate. Check server logs.");
+      } finally {
+          setBulkImporting(false);
+      }
+  };
+
+  const stageForImport = (igdbGame: any) => {
+      setStagedGame(mapIgdbToGame(igdbGame));
   };
 
   const saveStagedGame = async () => {
@@ -168,10 +216,11 @@ const AdminGames: React.FC = () => {
         {/* IMPORT TAB */}
         {activeTab === 'import' && (
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                {/* Search Column */}
+                {/* Search & Config Column */}
                 <div className="space-y-6">
+                    {/* Credentials Box */}
                     <div className="bg-vgb-card p-6 rounded-xl border border-zinc-800">
-                        <h2 className="text-xl font-bold text-white mb-4">1. IGDB Search</h2>
+                        <h2 className="text-xl font-bold text-white mb-4">1. IGDB Configuration</h2>
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -195,26 +244,41 @@ const AdminGames: React.FC = () => {
                                     />
                                 </div>
                             </div>
-                            <p className="text-[10px] text-gray-600">
-                                Requires Twitch Developer credentials. <a href="https://dev.twitch.tv/console" target="_blank" rel="noreferrer" className="text-vgb-accent underline">Get them here.</a>
-                            </p>
-
-                            <form onSubmit={handleIgdbSearch} className="flex gap-2 border-t border-zinc-800 pt-4">
-                                <input 
-                                    type="text" 
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    placeholder="Search for a game..."
-                                    className="flex-1 bg-zinc-900 border border-zinc-700 rounded p-2 text-white"
-                                />
-                                <button type="submit" className="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 rounded transition-colors">
-                                    {searching ? '...' : 'Search IGDB'}
+                            
+                            <div className="flex items-center justify-between border-t border-zinc-800 pt-4">
+                                <a href="https://dev.twitch.tv/console" target="_blank" rel="noreferrer" className="text-xs text-vgb-accent underline">
+                                    Get Keys Here
+                                </a>
+                                <button 
+                                    onClick={handleBulkPopulate}
+                                    disabled={bulkImporting || !clientId}
+                                    className="bg-green-700 hover:bg-green-600 text-white font-bold px-4 py-2 rounded text-xs transition-colors shadow-lg shadow-green-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                >
+                                    {bulkImporting ? 'Importing...' : '⚡ Auto-Populate Trending Games'}
                                 </button>
-                            </form>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                    {/* Manual Search Box */}
+                    <div className="bg-vgb-card p-6 rounded-xl border border-zinc-800">
+                        <h2 className="text-xl font-bold text-white mb-4">2. Manual Search</h2>
+                        <form onSubmit={handleIgdbSearch} className="flex gap-2">
+                            <input 
+                                type="text" 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Search specifically..."
+                                className="flex-1 bg-zinc-900 border border-zinc-700 rounded p-2 text-white"
+                            />
+                            <button type="submit" className="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 rounded transition-colors">
+                                {searching ? '...' : 'Search'}
+                            </button>
+                        </form>
+                    </div>
+
+                    {/* Results Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                         {importResults.map((result: any) => (
                             <div key={result.id} className="bg-vgb-card border border-zinc-800 rounded-lg overflow-hidden hover:border-vgb-accent/50 transition-colors flex flex-col">
                                 <div className="h-32 bg-zinc-800 relative">
@@ -252,7 +316,7 @@ const AdminGames: React.FC = () => {
                 {/* Staging/Edit Column */}
                 <div>
                      <div className={`bg-vgb-card p-6 rounded-xl border-2 sticky top-6 ${stagedGame ? 'border-vgb-accent shadow-lg shadow-vgb-accent/10' : 'border-zinc-800 border-dashed opacity-50'}`}>
-                        <h2 className="text-xl font-bold text-white mb-4">2. Edit & Save</h2>
+                        <h2 className="text-xl font-bold text-white mb-4">3. Review & Save</h2>
                         {stagedGame ? (
                             <div className="space-y-4">
                                 <div>

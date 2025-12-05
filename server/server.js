@@ -21,7 +21,19 @@ const getGamesWithIds = async () => {
 };
 
 /* =========================
-   IGDB PROXY ENDPOINT
+   IGDB HELPER: GET TOKEN
+========================= */
+const getTwitchAccessToken = async (clientId, clientSecret) => {
+    const authRes = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${clientId}&client_secret=${clientSecret}&grant_type=client_credentials`, {
+        method: 'POST'
+    });
+    const authData = await authRes.json();
+    if (!authRes.ok) throw new Error(authData.message || "Failed to authenticate with Twitch");
+    return authData.access_token;
+};
+
+/* =========================
+   IGDB SEARCH ENDPOINT
 ========================= */
 app.post("/igdb/search", async (req, res) => {
   const { clientId, clientSecret, query } = req.body;
@@ -31,18 +43,9 @@ app.post("/igdb/search", async (req, res) => {
   }
 
   try {
-    // 1. Get Access Token from Twitch
-    const authRes = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${clientId}&client_secret=${clientSecret}&grant_type=client_credentials`, {
-        method: 'POST'
-    });
-    const authData = await authRes.json();
-    
-    if (!authRes.ok) throw new Error(authData.message || "Failed to authenticate with Twitch");
-    
-    const accessToken = authData.access_token;
+    const accessToken = await getTwitchAccessToken(clientId, clientSecret);
 
-    // 2. Search IGDB
-    // We request specific fields: name, cover image, release date, summary, genres, companies, platforms
+    // Search IGDB
     const igdbRes = await fetch("https://api.igdb.com/v4/games", {
         method: 'POST',
         headers: {
@@ -61,6 +64,42 @@ app.post("/igdb/search", async (req, res) => {
 
   } catch (err) {
     console.error("IGDB Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/* =========================
+   IGDB DISCOVER ENDPOINT (NEW)
+========================= */
+app.post("/igdb/discover", async (req, res) => {
+  const { clientId, clientSecret } = req.body;
+  
+  if (!clientId || !clientSecret) {
+    return res.status(400).json({ error: "Missing Client ID or Secret" });
+  }
+
+  try {
+    const accessToken = await getTwitchAccessToken(clientId, clientSecret);
+
+    // Fetch Popular/Trending Games (Sorted by popularity)
+    const igdbRes = await fetch("https://api.igdb.com/v4/games", {
+        method: 'POST',
+        headers: {
+            'Client-ID': clientId,
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'text/plain'
+        },
+        // Get top 20 popular games that have covers
+        body: `fields name, cover.image_id, first_release_date, summary, genres.name, involved_companies.company.name, platforms.name; sort popularity desc; limit 20; where cover != null & first_release_date != null;`
+    });
+
+    const games = await igdbRes.json();
+    if (!igdbRes.ok) throw new Error("IGDB Request Failed");
+
+    res.json(games);
+
+  } catch (err) {
+    console.error("IGDB Discover Error:", err);
     res.status(500).json({ error: err.message });
   }
 });
