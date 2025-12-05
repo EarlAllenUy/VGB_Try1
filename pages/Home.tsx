@@ -97,17 +97,35 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in w-full">
+    <div className="space-y-8 animate-fade-in w-full pb-8">
       {/* Welcome Banner */}
-      <section className="bg-gradient-to-r from-blue-900 to-vgb-card p-8 rounded-xl border-l-4 border-vgb-accent shadow-lg">
-        <h1 className="text-3xl font-bold text-white mb-2">
-          {user ? `Welcome back, ${user.username}!` : 'Welcome to Video Game Bulletin'}
-        </h1>
-        <p className="text-gray-300">
-          {user?.role === 'admin' 
-            ? 'Manage content, users, and reviews from your dashboard.' 
-            : 'Your one-stop destination for the latest gaming news, release dates, and community reviews.'}
-        </p>
+      <section className="relative bg-gradient-to-br from-blue-950 via-zinc-900 to-black rounded-2xl border border-zinc-800 shadow-2xl overflow-hidden group">
+        {/* Dynamic Background Glow */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-vgb-accent/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none mix-blend-screen opacity-50"></div>
+        <div className="absolute inset-0 opacity-10 pattern-grid-lg pointer-events-none"></div>
+        
+        <div className="relative z-10 p-8 md:p-12 flex flex-col items-start">
+            
+            {/* Tagline Badge (Eyebrow) */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-6 hover:bg-white/10 transition-colors cursor-default shadow-lg">
+                <span className="w-1.5 h-1.5 rounded-full bg-vgb-accent animate-pulse"></span>
+                <span className="text-[10px] md:text-xs font-bold tracking-[0.2em] text-gray-300 uppercase font-mono">
+                    Your ultimate source for everything gaming
+                </span>
+            </div>
+
+            <h1 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight leading-none drop-shadow-lg">
+                {user ? `Welcome back, ${user.username}!` : 'VIDEO GAME BULLETIN'}
+            </h1>
+            
+            <div className="border-l-4 border-vgb-accent pl-6 max-w-3xl">
+                <p className="text-gray-300 text-lg md:text-xl leading-relaxed">
+                {user?.role === 'admin' 
+                    ? 'Manage content, users, and reviews from your dashboard.' 
+                    : 'Your one-stop destination for the latest gaming news, release dates, and community reviews.'}
+                </p>
+            </div>
+        </div>
       </section>
 
       {/* Main Grid Layout: Scales to 4 columns on XL screens for games, 1 col for news */}
@@ -265,12 +283,6 @@ const Home: React.FC = () => {
 
         </div>
       </div>
-
-      <section className="text-center pt-8 border-t border-zinc-800">
-        <p className="text-xl italic text-gray-500 font-serif">
-          "Your ultimate source for everything gaming."
-        </p>
-      </section>
     </div>
   );
 };
