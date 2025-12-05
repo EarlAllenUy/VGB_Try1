@@ -30,7 +30,6 @@
         background-color: #111111;
         color: #eeeeee;
       }
-      /* Custom Scrollbar */
       ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
@@ -45,8 +44,6 @@
       ::-webkit-scrollbar-thumb:hover {
         background: #00ff00; 
       }
-      
-      /* Utilities */
       .pattern-grid-lg {
         background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
         background-size: 20px 20px;
@@ -55,21 +52,22 @@
 <script type="importmap">
 {
   "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.1",
     "react/": "https://aistudiocdn.com/react@^19.2.1/",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "react": "https://aistudiocdn.com/react@^19.2.1",
     "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
-    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^6.28.0",
+    "express": "https://aistudiocdn.com/express@^5.2.1",
+    "vite": "https://aistudiocdn.com/vite@^7.2.6",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.10.1",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1",
     "cors": "https://aistudiocdn.com/cors@^2.8.5",
-    "body-parser": "https://aistudiocdn.com/body-parser@^2.2.1",
-    "express": "https://aistudiocdn.com/express@^5.2.1"
+    "body-parser": "https://aistudiocdn.com/body-parser@^2.2.1"
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <div id="root"></div>
-<script type="module" src="/index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>
