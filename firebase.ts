@@ -1,5 +1,4 @@
-// Fix: Use compat import to resolve type error with initializeApp
-import firebase from "firebase/compat/app";
+import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
@@ -14,6 +13,6 @@ const firebaseConfig = {
   measurementId: "G-HNKSMG8QF8"
 };
 
-const app = firebase.initializeApp(firebaseConfig);
-export const auth = getAuth(app as any);
-export const db = getFirestore(app as any);
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
