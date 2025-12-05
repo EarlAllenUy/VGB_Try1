@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Calendar from './pages/Calendar';
 import Reviews from './pages/Reviews';
 import Search from './pages/Search';
+import Favorites from './pages/Favorites';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/reviews" element={<Reviews />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/favorites" element={<Favorites />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Layout>
