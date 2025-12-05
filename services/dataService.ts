@@ -23,14 +23,19 @@ const addToLocal = <T>(key: string, item: T) => {
 
 // Favorites System Helpers
 export const getFavorites = async (userId: string = 'guest'): Promise<string[]> => {
-    // 1. Handle Guest or Demo Users via Local Storage
-    if (!userId || userId === 'guest' || userId.startsWith('demo-')) {
+    // 1. Strict Requirement: Guests have no favorites
+    if (!userId || userId === 'guest') {
+        return [];
+    }
+
+    // 2. Handle Demo Users via Local Storage
+    if (userId.startsWith('demo-')) {
         const key = `vgb_favorites_${userId}`;
         const stored = localStorage.getItem(key);
         return stored ? JSON.parse(stored) : [];
     }
 
-    // 2. Handle Authenticated Users via Firestore
+    // 3. Handle Authenticated Users via Firestore
     try {
         const userDocRef = doc(db, "users", userId);
         const userSnap = await getDoc(userDocRef);
@@ -47,8 +52,13 @@ export const getFavorites = async (userId: string = 'guest'): Promise<string[]> 
 };
 
 export const toggleFavorite = async (gameId: string, userId: string = 'guest'): Promise<boolean> => {
-    // 1. Handle Guest or Demo Users via Local Storage
-    if (!userId || userId === 'guest' || userId.startsWith('demo-')) {
+    // 1. Strict Requirement: Guests cannot favorite
+    if (!userId || userId === 'guest') {
+        return false;
+    }
+
+    // 2. Handle Demo Users via Local Storage
+    if (userId.startsWith('demo-')) {
         const key = `vgb_favorites_${userId}`;
         const stored = localStorage.getItem(key);
         const favorites: string[] = stored ? JSON.parse(stored) : [];
@@ -67,7 +77,7 @@ export const toggleFavorite = async (gameId: string, userId: string = 'guest'): 
         return isFav;
     }
 
-    // 2. Handle Authenticated Users via Firestore
+    // 3. Handle Authenticated Users via Firestore
     try {
         const userDocRef = doc(db, "users", userId);
         const userSnap = await getDoc(userDocRef);

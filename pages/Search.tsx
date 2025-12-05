@@ -144,6 +144,12 @@ const Search: React.FC = () => {
 
   const handleToggleFavorite = async (gameId: string | undefined) => {
     if (!gameId) return;
+
+    // Strict Requirement: Registered only
+    if (!user) {
+        alert("Favoriting games is available for registered users only. Please log in or create an account.");
+        return;
+    }
     
     // Optimistic Update: Update UI immediately
     const isCurrentlyFav = favorites.includes(gameId);
@@ -157,13 +163,12 @@ const Search: React.FC = () => {
 
     // Perform API call
     try {
-        await toggleFavorite(gameId, user?.uid);
-        // We don't necessarily need to reload from server if our optimistic logic was right,
-        // but strictly speaking we could verify. For now, trust the optimistic update.
+        await toggleFavorite(gameId, user.uid);
     } catch (error) {
         console.error("Failed to toggle favorite", error);
         // Revert on error
-        setFavorites(favorites); 
+        const favs = await getFavorites(user.uid);
+        setFavorites(favs); 
     }
   };
 
@@ -297,7 +302,8 @@ const Search: React.FC = () => {
                             e.stopPropagation();
                             handleToggleFavorite(game.id);
                         }}
-                        className={`absolute top-4 right-4 z-10 transition-transform active:scale-95 hover:scale-110 ${favorites.includes(game.id!) ? 'text-red-500' : 'text-zinc-600 hover:text-red-400'}`}
+                        className={`absolute top-4 right-4 z-10 transition-transform active:scale-95 hover:scale-110 ${favorites.includes(game.id!) ? 'text-red-500' : 'text-zinc-600 hover:text-red-400'} ${!user ? 'opacity-50' : ''}`}
+                        title={user ? (favorites.includes(game.id!) ? "Remove from favorites" : "Add to favorites") : "Log in to favorite"}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill={favorites.includes(game.id!) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
