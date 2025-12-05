@@ -116,7 +116,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <>
                 <SidebarButton>Manage Users</SidebarButton>
                 <SidebarButton>Approve Reviews</SidebarButton>
-                <SidebarButton>Edit Listings</SidebarButton>
+                <SidebarButton 
+                    active={location.pathname === '/admin/games'}
+                    onClick={() => navigate('/admin/games')}
+                >
+                    Admin Game Manager
+                </SidebarButton>
                 <SidebarButton>View Reports</SidebarButton>
               </>
             ) : user ? (

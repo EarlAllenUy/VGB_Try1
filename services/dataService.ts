@@ -126,7 +126,8 @@ const MOCK_GAMES: Game[] = [
     status: 'Released',
     platforms: ['PC', 'PS5', 'Xbox Series X'],
     genre: 'RPG',
-    description: 'Phantom Liberty is a new spy-thriller adventure for Cyberpunk 2077. Return as cyber-enhanced mercenary V and embark on a high-stakes mission of espionage and intrigue to save the NUS President.'
+    description: 'Phantom Liberty is a new spy-thriller adventure for Cyberpunk 2077. Return as cyber-enhanced mercenary V and embark on a high-stakes mission of espionage and intrigue to save the NUS President.',
+    imageUrl: 'https://media.rawg.io/media/games/59a/59a3ebcba3d08c51532c6ca877af2564.jpg'
   },
   {
     id: '2',
@@ -137,7 +138,8 @@ const MOCK_GAMES: Game[] = [
     status: 'Released',
     platforms: ['PC', 'Xbox Series X'],
     genre: 'RPG',
-    description: 'Starfield is the first new universe in over 25 years from Bethesda Game Studios. Create any character you want and explore with unparalleled freedom.'
+    description: 'Starfield is the first new universe in over 25 years from Bethesda Game Studios. Create any character you want and explore with unparalleled freedom.',
+    imageUrl: 'https://media.rawg.io/media/games/54a/54a3e4c617217848dc43c4de9989fe37.jpg'
   },
   {
     id: '3',
@@ -148,7 +150,8 @@ const MOCK_GAMES: Game[] = [
     status: 'Upcoming',
     platforms: ['PC', 'Switch', 'PS5', 'Xbox'],
     genre: 'Action',
-    description: 'Discover a vast, haunted kingdom in Hollow Knight: Silksong! The sequel to the award winning action-adventure. Play as Hornet, princess-protector of Hallownest.'
+    description: 'Discover a vast, haunted kingdom in Hollow Knight: Silksong! The sequel to the award winning action-adventure. Play as Hornet, princess-protector of Hallownest.',
+    imageUrl: 'https://media.rawg.io/media/games/729/7290a365f5732152a5146c8230b06b00.jpg'
   },
   {
     id: '4',
@@ -159,7 +162,8 @@ const MOCK_GAMES: Game[] = [
     status: 'Released',
     platforms: ['PC', 'PS5', 'Xbox'],
     genre: 'RPG',
-    description: 'The Shadow of the Erdtree expansion features an all-new story set in the Land of Shadow, imbued with mystery, perilous dungeons, and new enemies.'
+    description: 'The Shadow of the Erdtree expansion features an all-new story set in the Land of Shadow, imbued with mystery, perilous dungeons, and new enemies.',
+    imageUrl: 'https://media.rawg.io/media/games/b29/b294fdd866dcdb643e7bab370a552855.jpg'
   },
   {
     id: '5',
@@ -170,7 +174,8 @@ const MOCK_GAMES: Game[] = [
     status: 'Upcoming',
     platforms: ['PS5', 'Xbox Series X'],
     genre: 'Adventure',
-    description: 'Grand Theft Auto VI heads to the state of Leonida, home to the neon-soaked streets of Vice City and beyond.'
+    description: 'Grand Theft Auto VI heads to the state of Leonida, home to the neon-soaked streets of Vice City and beyond.',
+    imageUrl: 'https://media.rawg.io/media/games/b21/b21555abc69d04d9b5d7da15fad3903f.jpg'
   },
   {
     id: '6',
@@ -181,29 +186,8 @@ const MOCK_GAMES: Game[] = [
     status: 'Released',
     platforms: ['PC', 'Xbox Series X'],
     genre: 'Racing',
-    description: 'Out-build the competition in the all-new career. Race your friends in the adjudicated multiplayer events.'
-  },
-  {
-    id: '7',
-    title: 'Resident Evil 4 Remake',
-    releaseDate: getRelativeDate(-200),
-    developer: 'Capcom',
-    publisher: 'Capcom',
-    status: 'Released',
-    platforms: ['PC', 'PS5', 'Xbox Series X'],
-    genre: 'Horror',
-    description: 'Survival is just the beginning. Six years have passed since the biological disaster in Raccoon City.'
-  },
-  {
-    id: '8',
-    title: 'Indie Gem: The Climber',
-    releaseDate: getRelativeDate(2), // Coming in 2 days
-    developer: 'Indie Dev',
-    publisher: 'Indie Pub',
-    status: 'Upcoming',
-    platforms: ['PC'],
-    genre: 'Platformer',
-    description: 'A challenging climb to the top of the mountain.'
+    description: 'Out-build the competition in the all-new career. Race your friends in the adjudicated multiplayer events.',
+    imageUrl: 'https://media.rawg.io/media/games/082/082365507ff1d9263153572bf4250261.jpg'
   }
 ];
 
@@ -226,6 +210,34 @@ export const fetchGames = async (): Promise<Game[]> => {
     const demoGame = { ...MOCK_GAMES[0], id: 'demo-today', releaseDate: todayStr, title: "Special Release Today", genre: 'Action' };
     return [demoGame, ...MOCK_GAMES];
   }
+};
+
+export const addGame = async (game: Game): Promise<Game | null> => {
+    try {
+        const response = await fetch("http://localhost:3001/add", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(game)
+        });
+        if (!response.ok) throw new Error("Failed to add game");
+        const result = await response.json();
+        return result.data;
+    } catch (error) {
+        console.error("Add game failed:", error);
+        return null;
+    }
+};
+
+export const deleteGame = async (gameId: string): Promise<boolean> => {
+    try {
+        const response = await fetch(`http://localhost:3001/delete/${gameId}`, {
+            method: "DELETE"
+        });
+        return response.ok;
+    } catch (error) {
+        console.error("Delete game failed:", error);
+        return false;
+    }
 };
 
 export const fetchReviews = async (): Promise<Review[]> => {

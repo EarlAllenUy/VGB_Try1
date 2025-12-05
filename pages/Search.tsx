@@ -294,7 +294,7 @@ const Search: React.FC = () => {
                  <div 
                     key={game.id} 
                     onClick={() => setSelectedGame(game)}
-                    className="relative bg-vgb-card p-4 rounded-xl border border-zinc-800 hover:border-vgb-accent/50 hover:shadow-lg transition-all duration-300 group flex flex-col justify-between cursor-pointer transform hover:-translate-y-1 h-full"
+                    className="relative bg-vgb-card rounded-xl border border-zinc-800 hover:border-vgb-accent/50 hover:shadow-lg transition-all duration-300 group flex flex-col justify-between cursor-pointer transform hover:-translate-y-1 h-full overflow-hidden"
                  >
                     {/* Heart Button */}
                     <button 
@@ -302,42 +302,48 @@ const Search: React.FC = () => {
                             e.stopPropagation();
                             handleToggleFavorite(game.id);
                         }}
-                        className={`absolute top-4 right-4 z-10 transition-transform active:scale-95 hover:scale-110 ${favorites.includes(game.id!) ? 'text-red-500' : 'text-zinc-600 hover:text-red-400'} ${!user ? 'opacity-50' : ''}`}
+                        className={`absolute top-2 right-2 z-10 transition-transform active:scale-95 hover:scale-110 p-2 rounded-full backdrop-blur-sm bg-black/40 ${favorites.includes(game.id!) ? 'text-red-500' : 'text-zinc-400 hover:text-red-400'} ${!user ? 'opacity-50' : ''}`}
                         title={user ? (favorites.includes(game.id!) ? "Remove from favorites" : "Add to favorites") : "Log in to favorite"}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill={favorites.includes(game.id!) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill={favorites.includes(game.id!) ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
                     </button>
 
-                    <div>
-                      <div className="flex justify-between items-start mb-2 pr-8">
-                          <h3 className="font-bold text-white group-hover:text-vgb-accent truncate text-lg">{game.title}</h3>
-                      </div>
-                      <div className="flex gap-2 mb-2 items-center">
-                        <span className="text-xs text-gray-500 uppercase tracking-wide bg-zinc-900 px-2 py-0.5 rounded">{game.genre || 'Unknown'}</span>
-                        {game.avgRating > 0 && (
-                            <div className="flex items-center gap-1 bg-zinc-900 px-1.5 py-0.5 rounded text-xs">
-                               <span className="text-yellow-400">★</span>
-                               <span className="font-bold text-white">{game.avgRating.toFixed(1)}</span>
+                    {/* Image Header */}
+                    <div className="h-32 w-full relative bg-zinc-800">
+                        {game.imageUrl ? (
+                             <img src={game.imageUrl} alt={game.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-zinc-700">
+                                {game.title.charAt(0)}
                             </div>
-                          )}
-                      </div>
-                      <div className="text-sm text-gray-400 space-y-1">
-                          <p>Release: <span className="text-gray-300">{game.releaseDate}</span></p>
-                          <p>Dev: <span className="text-gray-300">{game.developer}</span></p>
-                      </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-vgb-card via-transparent to-transparent"></div>
                     </div>
-                    
-                    <div className="mt-4 pt-3 border-t border-zinc-800/50 flex flex-wrap gap-1">
-                       {game.platforms?.map(p => (
-                         <span key={p} className="px-2 py-0.5 bg-zinc-700 rounded text-[10px] text-gray-300">{p}</span>
-                       ))}
-                       <span className={`ml-auto px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                         (game.status || '').toLowerCase() === 'released' ? 'bg-green-900/50 text-green-400' : 'bg-yellow-900/50 text-yellow-400'
-                       }`}>
-                         {game.status}
-                       </span>
+
+                    <div className="p-4 pt-2 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 className="font-bold text-white group-hover:text-vgb-accent truncate text-sm mb-1">{game.title}</h3>
+                            <div className="flex gap-2 mb-2 items-center">
+                                <span className="text-[10px] text-gray-500 uppercase tracking-wide bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">{game.genre || 'Unknown'}</span>
+                                {game.avgRating > 0 && (
+                                    <div className="flex items-center gap-1 bg-zinc-900 px-1.5 py-0.5 rounded text-[10px] border border-zinc-800">
+                                    <span className="text-yellow-400">★</span>
+                                    <span className="font-bold text-white">{game.avgRating.toFixed(1)}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        
+                        <div className="mt-2 pt-2 border-t border-zinc-800/50 flex flex-wrap gap-1 items-center justify-between">
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
+                                (game.status || '').toLowerCase() === 'released' ? 'text-green-400' : 'text-yellow-400'
+                            }`}>
+                                {game.status}
+                            </span>
+                            <span className="text-[9px] text-gray-500">{game.releaseDate}</span>
+                        </div>
                     </div>
                  </div>
                ))}

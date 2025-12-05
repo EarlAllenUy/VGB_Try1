@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { db } from "./firebaseAPI.js"; 
-import { ref, push, get } from "firebase/database";
+import { ref, push, get, remove, child } from "firebase/database";
 
 const app = express();
 app.use(cors());
@@ -21,6 +21,51 @@ const getGamesWithIds = async () => {
 };
 
 /* =========================
+   IGDB PROXY ENDPOINT
+========================= */
+app.post("/igdb/search", async (req, res) => {
+  const { clientId, clientSecret, query } = req.body;
+  
+  if (!clientId || !clientSecret || !query) {
+    return res.status(400).json({ error: "Missing Client ID, Secret, or Query" });
+  }
+
+  try {
+    // 1. Get Access Token from Twitch
+    const authRes = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${clientId}&client_secret=${clientSecret}&grant_type=client_credentials`, {
+        method: 'POST'
+    });
+    const authData = await authRes.json();
+    
+    if (!authRes.ok) throw new Error(authData.message || "Failed to authenticate with Twitch");
+    
+    const accessToken = authData.access_token;
+
+    // 2. Search IGDB
+    // We request specific fields: name, cover image, release date, summary, genres, companies, platforms
+    const igdbRes = await fetch("https://api.igdb.com/v4/games", {
+        method: 'POST',
+        headers: {
+            'Client-ID': clientId,
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'text/plain'
+        },
+        // APICALYPSE Query Language
+        body: `search "${query}"; fields name, cover.image_id, first_release_date, summary, genres.name, involved_companies.company.name, platforms.name; limit 12;`
+    });
+
+    const games = await igdbRes.json();
+    if (!igdbRes.ok) throw new Error("IGDB Request Failed");
+
+    res.json(games);
+
+  } catch (err) {
+    console.error("IGDB Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/* =========================
    ADD NEW GAME
 ========================= */
 app.post("/add", async (req, res) => {
@@ -32,6 +77,22 @@ app.post("/add", async (req, res) => {
     const newRef = await push(ref(db, "games"), gameData);
     // Return the new ID so the frontend can potentially use it immediately
     res.status(201).json({ message: "Game added successfully!", data: { id: newRef.key, ...gameData } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/* =========================
+   DELETE GAME
+========================= */
+app.delete("/delete/:id", async (req, res) => {
+  try {
+    const gameId = req.params.id;
+    if (!gameId) {
+      return res.status(400).json({ message: "Missing game ID." });
+    }
+    await remove(ref(db, `games/${gameId}`));
+    res.status(200).json({ message: "Game deleted successfully." });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

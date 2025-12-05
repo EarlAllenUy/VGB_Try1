@@ -8,6 +8,7 @@ export interface Game {
   platforms?: string[];
   description?: string;
   genre?: string;
+  imageUrl?: string; // URL from RAWG or manual input
 }
 
 export interface Review {

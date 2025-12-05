@@ -24,8 +24,16 @@ const GameDetailModal: React.FC<GameDetailModalProps> = ({ game, isOpen, onClose
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Background */}
-        <div className="h-32 bg-gradient-to-r from-zinc-800 to-vgb-card relative">
-             <div className="absolute inset-0 bg-vgb-accent/5 pattern-grid-lg opacity-20"></div>
+        <div className="h-48 relative">
+             {game.imageUrl ? (
+                 <img src={game.imageUrl} alt={game.title} className="w-full h-full object-cover" />
+             ) : (
+                <div className="w-full h-full bg-gradient-to-r from-zinc-800 to-vgb-card flex items-center justify-center">
+                    <span className="text-8xl text-white/5 font-black">{game.title.charAt(0)}</span>
+                </div>
+             )}
+             <div className="absolute inset-0 bg-gradient-to-t from-vgb-card to-transparent opacity-90"></div>
+             
              <button 
                 onClick={onClose}
                 className="absolute top-4 right-4 bg-black/50 hover:bg-black/80 text-white rounded-full p-2 transition-colors z-10"
@@ -36,18 +44,22 @@ const GameDetailModal: React.FC<GameDetailModalProps> = ({ game, isOpen, onClose
              </button>
         </div>
 
-        <div className="px-8 pb-8 -mt-12 relative">
+        <div className="px-8 pb-8 -mt-16 relative z-10">
             <div className="flex flex-col md:flex-row gap-6">
                 
                 {/* Game "Cover" Placeholder */}
-                <div className="w-32 h-48 md:w-48 md:h-64 bg-zinc-900 rounded-lg shadow-xl border border-zinc-700 shrink-0 flex items-center justify-center text-zinc-700 font-bold text-4xl">
-                    {game.title.charAt(0)}
+                <div className="w-32 h-48 md:w-48 md:h-64 bg-zinc-900 rounded-lg shadow-xl border border-zinc-700 shrink-0 flex items-center justify-center overflow-hidden">
+                    {game.imageUrl ? (
+                         <img src={game.imageUrl} alt={game.title} className="w-full h-full object-cover" />
+                    ) : (
+                        <span className="text-zinc-700 font-bold text-4xl">{game.title.charAt(0)}</span>
+                    )}
                 </div>
 
-                <div className="flex-1 pt-12 md:pt-14 space-y-4">
+                <div className="flex-1 pt-4 md:pt-14 space-y-4">
                     <div className="flex justify-between items-start">
                         <div>
-                            <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight">{game.title}</h2>
+                            <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight drop-shadow-md">{game.title}</h2>
                             <p className="text-vgb-accent font-bold text-sm mt-1 uppercase tracking-wide">{game.developer}</p>
                         </div>
                         
