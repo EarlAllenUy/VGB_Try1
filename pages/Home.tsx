@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fetchGames, fetchReviews, fetchNews } from '../services/dataService';
 import { Game, Review, NewsItem } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +12,7 @@ interface GameWithRating extends Game {
 
 const Home: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [featuredGames, setFeaturedGames] = useState<GameWithRating[]>([]);
   const [anticipatedGames, setAnticipatedGames] = useState<GameWithRating[]>([]);
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -128,6 +130,30 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* Admin Shortcut */}
+      {user?.role === 'admin' && (
+        <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4 flex items-center justify-between shadow-lg">
+            <div className="flex items-center gap-4">
+                <div className="p-3 bg-vgb-accent/10 rounded-lg text-vgb-accent">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 className="text-white font-bold">Admin Dashboard</h3>
+                    <p className="text-sm text-gray-400">You have admin access. Manage the game database directly.</p>
+                </div>
+            </div>
+            <button 
+                onClick={() => navigate('/admin/games')} 
+                className="bg-vgb-accent hover:bg-white text-black px-6 py-2 rounded-lg font-bold transition-colors shadow-lg shadow-vgb-accent/10"
+            >
+                Manage Games
+            </button>
+        </div>
+      )}
+
       {/* Main Grid Layout: Scales to 4 columns on XL screens for games, 1 col for news */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
         
@@ -172,42 +198,58 @@ const Home: React.FC = () => {
               // Inner Grid: Scales from 1 to 4 columns based on screen width
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 animate-fade-in">
               {displayGames.map((game) => (
-                  <div key={game.id} className="group bg-vgb-card p-5 rounded-xl border border-zinc-800 hover:border-vgb-accent/50 hover:shadow-lg hover:shadow-vgb-accent/10 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between h-full">
-                    <div>
-                      <div className="flex justify-between items-start mb-4">
-                          <h3 className="text-xl font-bold text-white group-hover:text-vgb-accent transition-colors truncate pr-2" title={game.title}>
-                          {game.title}
-                          </h3>
-                          <span className={`text-xs px-2 py-1 rounded font-bold uppercase shrink-0 ${
-                              game.status === 'Released' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
-                          }`}>
-                          {game.status || 'TBA'}
-                          </span>
-                      </div>
-                      
-                      <div className="space-y-2 text-sm text-gray-400">
-                          <p><span className="text-gray-500">Dev:</span> {game.developer || 'Unknown'}</p>
-                          <p><span className="text-gray-500">Release:</span> {game.releaseDate}</p>
-                          <div className="flex flex-wrap gap-2 mt-3">
-                          {game.platforms?.map(p => (
-                              <span key={p} className="px-2 py-0.5 bg-zinc-700 rounded text-xs text-gray-300">{p}</span>
-                          ))}
-                          </div>
-                      </div>
+                  <div key={game.id} className="group bg-vgb-card rounded-xl border border-zinc-800 hover:border-vgb-accent/50 hover:shadow-lg hover:shadow-vgb-accent/10 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between h-full overflow-hidden">
+                    
+                    {/* Image Header */}
+                    <div className="h-40 w-full relative bg-zinc-800">
+                        {game.imageUrl ? (
+                             <img src={game.imageUrl} alt={game.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-zinc-700">
+                                {game.title.charAt(0)}
+                            </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-vgb-card via-transparent to-transparent"></div>
+                        
+                        <div className="absolute top-2 right-2">
+                             <span className={`text-[10px] px-2 py-1 rounded font-bold uppercase shrink-0 ${
+                                game.status === 'Released' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'
+                            }`}>
+                            {game.status || 'TBA'}
+                            </span>
+                        </div>
                     </div>
 
-                    {/* Rating Section - Only visible on Anticipated Tab or if data exists */}
-                    {activeTab === 'anticipated' && (
-                      <div className="mt-4 pt-4 border-t border-zinc-800 flex items-center justify-between">
-                        <div className="flex items-center gap-1">
-                          <span className="text-yellow-400 text-lg">★</span>
-                          <span className="font-bold text-white text-lg">{(game.avgRating || 0).toFixed(1)}</span>
+                    <div className="p-5 pt-2 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 className="text-xl font-bold text-white group-hover:text-vgb-accent transition-colors truncate mb-1" title={game.title}>
+                                {game.title}
+                            </h3>
+                            
+                            <div className="space-y-1 text-sm text-gray-400">
+                                <p><span className="text-gray-500">Dev:</span> {game.developer || 'Unknown'}</p>
+                                <p><span className="text-gray-500">Release:</span> {game.releaseDate}</p>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                {game.platforms?.map(p => (
+                                    <span key={p} className="px-2 py-0.5 bg-zinc-700 rounded text-xs text-gray-300">{p}</span>
+                                ))}
+                                </div>
+                            </div>
                         </div>
-                        <span className="text-xs text-gray-500">
-                          {game.reviewCount} Reviews
-                        </span>
-                      </div>
-                    )}
+
+                        {/* Rating Section */}
+                        {activeTab === 'anticipated' && (
+                        <div className="mt-4 pt-4 border-t border-zinc-800 flex items-center justify-between">
+                            <div className="flex items-center gap-1">
+                            <span className="text-yellow-400 text-lg">★</span>
+                            <span className="font-bold text-white text-lg">{(game.avgRating || 0).toFixed(1)}</span>
+                            </div>
+                            <span className="text-xs text-gray-500">
+                            {game.reviewCount} Reviews
+                            </span>
+                        </div>
+                        )}
+                    </div>
                   </div>
               ))}
               </div>
