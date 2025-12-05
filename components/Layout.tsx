@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
 
@@ -10,6 +10,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
 
@@ -38,9 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                         alt="VGB Logo" 
                         className="h-10 w-auto object-contain transition-transform group-hover:scale-105"
                         onError={(e) => {
-                            // Fallback to text if image is missing
                             e.currentTarget.style.display = 'none';
-                            // Check if fallback already exists to prevent duplicates
                             if (e.currentTarget.parentElement?.querySelector('.logo-fallback')) return;
                             
                             const span = document.createElement('span');
@@ -122,15 +121,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </>
             ) : user ? (
               <>
-                <SidebarButton>My Favorites</SidebarButton>
-                <SidebarButton>My Reviews</SidebarButton>
+                <SidebarButton onClick={() => navigate('/favorites')}>My Favorites</SidebarButton>
+                <SidebarButton onClick={() => navigate('/reviews')}>My Reviews</SidebarButton>
                 <SidebarButton>Account Settings</SidebarButton>
               </>
             ) : (
               <>
-                <SidebarButton>Popular Games</SidebarButton>
-                <SidebarButton>New Releases</SidebarButton>
-                <SidebarButton>Top Rated</SidebarButton>
+                <SidebarButton onClick={() => navigate('/search')}>Popular Games</SidebarButton>
+                <SidebarButton onClick={() => navigate('/calendar')}>New Releases</SidebarButton>
+                <SidebarButton onClick={() => navigate('/search')}>Top Rated</SidebarButton>
               </>
             )}
           </div>
