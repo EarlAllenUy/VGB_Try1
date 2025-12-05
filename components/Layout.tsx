@@ -121,14 +121,34 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </>
             ) : user ? (
               <>
-                <SidebarButton onClick={() => navigate('/favorites')}>My Favorites</SidebarButton>
-                <SidebarButton onClick={() => navigate('/reviews')}>My Reviews</SidebarButton>
+                <SidebarButton 
+                    active={location.pathname === '/favorites'} 
+                    onClick={() => navigate('/favorites')}
+                >
+                    My Favorites
+                </SidebarButton>
+                <SidebarButton 
+                    active={location.pathname === '/my-reviews'} 
+                    onClick={() => navigate('/my-reviews')}
+                >
+                    My Reviews
+                </SidebarButton>
                 <SidebarButton>Account Settings</SidebarButton>
               </>
             ) : (
               <>
-                <SidebarButton onClick={() => navigate('/search')}>Popular Games</SidebarButton>
-                <SidebarButton onClick={() => navigate('/calendar')}>New Releases</SidebarButton>
+                <SidebarButton 
+                    active={location.pathname === '/search'} 
+                    onClick={() => navigate('/search')}
+                >
+                    Popular Games
+                </SidebarButton>
+                <SidebarButton 
+                    active={location.pathname === '/calendar'} 
+                    onClick={() => navigate('/calendar')}
+                >
+                    New Releases
+                </SidebarButton>
                 <SidebarButton onClick={() => navigate('/search')}>Top Rated</SidebarButton>
               </>
             )}
@@ -154,10 +174,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   );
 };
 
-const SidebarButton: React.FC<{ children: React.ReactNode; onClick?: () => void }> = ({ children, onClick }) => (
+const SidebarButton: React.FC<{ children: React.ReactNode; onClick?: () => void; active?: boolean }> = ({ children, onClick, active }) => (
   <button 
     onClick={onClick}
-    className="w-full text-left bg-zinc-700 hover:bg-zinc-600 text-gray-200 px-4 py-3 rounded text-sm font-medium transition-all hover:translate-x-1"
+    className={`w-full text-left px-4 py-3 rounded text-sm font-medium transition-all hover:translate-x-1 ${
+        active 
+          ? 'bg-vgb-accent text-black font-bold shadow-md shadow-vgb-accent/20' 
+          : 'bg-zinc-700 hover:bg-zinc-600 text-gray-200'
+      }`}
   >
     {children}
   </button>
