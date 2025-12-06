@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -18,14 +18,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialView = 'l
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { refreshUser, loginAsDemo } = useAuth();
-
-  // Reset view and errors when modal opens or initialView prop changes
-  useEffect(() => {
-    if (isOpen) {
-      setView(initialView);
-      setError('');
-    }
-  }, [isOpen, initialView]);
 
   if (!isOpen) return null;
 

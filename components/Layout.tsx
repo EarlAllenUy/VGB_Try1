@@ -170,13 +170,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <p>&copy; 2025 Project VAUYL | Video Game Bulletin</p>
       </footer>
 
-      {isAuthModalOpen && (
-        <AuthModal 
-            isOpen={isAuthModalOpen} 
-            onClose={() => setAuthModalOpen(false)} 
-            initialView={authMode} 
-        />
-      )}
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setAuthModalOpen(false)} 
+        initialView={authMode} 
+      />
     </div>
   );
 };
